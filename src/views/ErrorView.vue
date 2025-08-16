@@ -20,7 +20,10 @@ async function handlePaste(e: ClipboardEvent) {
 
   const raw = e.clipboardData?.getData('text') ?? ''
   const uid = extractTenDigits(raw)
-  if (!uid) return
+  if (!uid) {
+    console.warn('[paste] нет 10 подряд цифр в буфере:', JSON.stringify(raw))
+    return
+  }
 
   submitting.value = true
   try {
@@ -29,12 +32,14 @@ async function handlePaste(e: ClipboardEvent) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ uid }),
     })
+    console.log('[submit]', { uid, status: res.status, ok: res.ok })
     if (res.ok) {
       router.push({ name: 'profile', params: { id: uid } })
     } else {
       router.push({ name: 'error' })
     }
   } catch (err) {
+    console.error('[submit] error', err)
     router.push({ name: 'error' })
   } finally {
     setTimeout(() => (submitting.value = false), 300)
