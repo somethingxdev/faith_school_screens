@@ -1,0 +1,24 @@
+@import './fonts.css';
+@import 'tailwindcss';
+
+@theme {
+  --font-base: 'Geologica', sans-serif;
+  --font-heading: 'Tovari Sans', sans-serif;
+
+  --color-background: #f9f9f9;
+  --color-primary: #4d4e56;
+
+  --text-heading: 150px;
+  --text-subheading: 50px;
+
+  --text-shadow-custom: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.video {
+  clip-path: ellipse(95% 80% at 50% 20%);
+}
+
+body {
+  background: var(--color-background);
+  font-family: var(--font-base);
+}
