@@ -101,8 +101,14 @@ export default defineConfig({
           {
             src: '/screenshots/wide.png',
             sizes: '1440x900',
-            type: 'image/png',
+            type: 'image/webp',
             form_factor: 'wide',
+          },
+          {
+            src: '/screenshots/mobile.png',
+            sizes: '480x800',
+            type: 'image/png',
+            form_factor: 'narrow',
           },
         ],
         prefer_related_applications: false,
