@@ -18,7 +18,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
-      includeAssets: ['favicon.ico'],
+      includeAssets: ['favicon.ico', 'images/logo-light.webp'],
       manifest: {
         short_name: 'Пример PWA',
         name: 'Глава 6 - Пример прогрессивного веб-приложения',
@@ -29,14 +29,10 @@ export default defineConfig({
         orientation: 'portrait',
         icons: [
           {
-            src: '/images/chapter_6_icon_192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: '/images/chapter_6_icon.png',
-            sizes: '512x512',
-            type: 'image/png',
+            src: '/images/logo-light.webp',
+            sizes: 'any',
+            type: 'image/webp',
+            purpose: 'any',
           },
         ],
         prefer_related_applications: false,
