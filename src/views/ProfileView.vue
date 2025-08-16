@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useIdle, useFetch } from '@vueuse/core'
 import BodyBg from '@/assets/images/background.avif'
 import Successful from '@/assets/images/successful.webp'
@@ -27,25 +27,43 @@ interface ScanResponse {
 const nfcId = route.params.id
 
 const student = ref<Student | null>(null)
+const buffer = ref('')
 
-const { data, error, execute } = useFetch<ScanResponse>('https://kiosk.bezalelab.com/api/v1/attendance/scan', { immediate: false })
-  .post({ uid: String(nfcId ?? '') })
-  .json()
-
-onMounted(async () => {
-  if (!nfcId) return
+async function submitUid(uid: string) {
   try {
-    await execute()
-    if (data.value?.success) {
+    const { data, response } = await useFetch<ScanResponse>('https://kiosk.bezalelab.com/api/v1/attendance/scan')
+      .post({ uid })
+      .json()
+    if (response.value?.ok && data.value?.success) {
       student.value = data.value.student
-    } else if (error.value) {
-      console.error('useFetch error:', error.value)
+    } else {
+      student.value = null
     }
   } catch (e) {
     console.error('Error fetching student data:', e)
+    student.value = null
   }
+}
+
+onMounted(() => {
+  if (nfcId) submitUid(String(nfcId))
+  window.addEventListener('keydown', handleKeydown, true)
 });
 
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown, true)
+})
+
+function handleKeydown(e: KeyboardEvent) {
+  if (/^\d$/.test(e.key)) {
+    buffer.value += e.key
+    if (buffer.value.length === 10) {
+      const uid = buffer.value
+      buffer.value = ''
+      submitUid(uid)
+    }
+  }
+}
 
 const { idle, reset } = useIdle(60 * 1000)
 watch(idle, (idleValue) => {
