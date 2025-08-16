@@ -29,10 +29,9 @@ export default defineConfig({
         orientation: 'portrait',
         icons: [
           {
-            src: '/images/logo-light.webp',
+            src: '/logo-light.webp',
             sizes: 'any',
             type: 'image/webp',
-            purpose: 'any',
           },
         ],
         prefer_related_applications: false,
