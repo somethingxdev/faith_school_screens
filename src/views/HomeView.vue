@@ -1,12 +1,62 @@
 <script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import HelloVideo from '@/assets/videos/tiger_waving_hi.mp4'
 import BezalelLogo from '@/assets/images/bezazel-logo.svg'
 import FaithSchoolLogo from '@/assets/images/faith_school-logo.svg'
 import BodyBg from '@/assets/images/background.avif'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const submitting = ref(false)
+
+function extractTenDigits(text: string): string | null {
+  const m = text.match(/\d{10}/)
+  return m ? m[0] : null
+}
+
+async function handlePaste(e: ClipboardEvent) {
+  e.preventDefault()
+  if (submitting.value) return
+
+  const raw = e.clipboardData?.getData('text') ?? ''
+  const uid = extractTenDigits(raw)
+  if (!uid) {
+    console.warn('[paste] нет 10 подряд цифр в буфере:', JSON.stringify(raw))
+    return
+  }
+
+  submitting.value = true
+  try {
+    const res = await fetch('https://kiosk.bezalelab.com/api/v1/attendance/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid }),
+    })
+    console.log('[submit]', { uid, status: res.status, ok: res.ok })
+    if (res.ok) {
+      router.push({ name: 'profile', params: { id: uid } })
+    } else {
+      router.push({ name: 'error' })
+    }
+  } catch (err) {
+    console.error('[submit] error', err)
+    router.push({ name: 'error' })
+  } finally {
+    setTimeout(() => (submitting.value = false), 300)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('paste', handlePaste, true)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('paste', handlePaste, true)
+})
 </script>
 
 <template>
-  <div class="container mx-auto max-w-[1080px] h-[1920px] bg-cover flex flex-col gap-22.5 pb-10" :style="{ backgroundImage: `url(${BodyBg})` }">
+  <div class="select-none touch-none container mx-auto max-w-[1080px] h-[1920px] bg-cover flex flex-col gap-22.5 pb-10" :style="{ backgroundImage: `url(${BodyBg})` }">
     <div class="relative">
       <div class="h-220 overflow-hidden video">
         <video class="h-full object-cover object-center" :src="HelloVideo" autoplay loop muted></video>
@@ -18,6 +68,7 @@ import BodyBg from '@/assets/images/background.avif'
         </div>
       </div>
     </div>
+
     <div class="flex flex-col items-center justify-between text-center text-primary h-full">
       <h1 class="font-bold font-heading text-heading/[70%] mb-10">
         Привет! <br />
@@ -27,6 +78,7 @@ import BodyBg from '@/assets/images/background.avif'
         Приложи карту, <br />
         чтобы отметиться
       </p>
+
       <div class="text-center">
         <img :src="FaithSchoolLogo" alt="logo" />
       </div>

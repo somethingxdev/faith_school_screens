@@ -16,7 +16,7 @@ const router = createRouter({
       component: ErrorView,
     },
     {
-      path: '/profile',
+      path: '/profile/:id',
       name: 'profile',
       component: ProfileView,
     },

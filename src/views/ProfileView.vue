@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRoute } from 'vue-router'
 import BodyBg from '@/assets/images/background.avif'
 import Kid from '@/assets/images/kid.png'
 import Successful from '@/assets/images/successful.webp'
@@ -8,6 +9,9 @@ import BlobDecor from '@/assets/images/bloob-decor.webp'
 import DirhamAccount from '@/assets/images/dirham-account.webp'
 import GoldCoin from '@/assets/images/gold-coin.webp'
 import SilverCoin from '@/assets/images/silver-coin.webp'
+
+const route = useRoute()
+const nfcId = route.params.id
 </script>
 
 <template>
@@ -22,6 +26,7 @@ import SilverCoin from '@/assets/images/silver-coin.webp'
         <img :src="Kid" alt="kid" />
         <div class="z-15 text-center">
           <h1 class="text-heading font-bold text-white text-shadow-custom font-heading leading-[70%]">Ваня</h1>
+<p class="text-white">NFC ID: {{ nfcId }}</p>
           <p class="text-white font-heading text-subheading font-bold mb-10">Русский язык (3-6 лет)</p>
           <div class="flex items-center justify-center gap-5">
             <img :src="Dirham" alt="dirham" class="h-15 w-auto" />

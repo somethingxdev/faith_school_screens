@@ -3,6 +3,51 @@ import ErrorVideo from "@/assets/videos/tiger_can't_find_card_3.mp4"
 import BezalelLogo from '@/assets/images/bezazel-logo.svg'
 import FaithSchoolLogo from '@/assets/images/faith_school-logo.svg'
 import BodyBg from '@/assets/images/background.avif'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const submitting = ref(false)
+
+function extractTenDigits(text: string): string | null {
+  const m = text.match(/\d{10}/)
+  return m ? m[0] : null
+}
+
+async function handlePaste(e: ClipboardEvent) {
+  e.preventDefault()
+  if (submitting.value) return
+
+  const raw = e.clipboardData?.getData('text') ?? ''
+  const uid = extractTenDigits(raw)
+  if (!uid) return
+
+  submitting.value = true
+  try {
+    const res = await fetch('https://kiosk.bezalelab.com/api/v1/attendance/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid }),
+    })
+    if (res.ok) {
+      router.push({ name: 'profile', params: { id: uid } })
+    } else {
+      router.push({ name: 'error' })
+    }
+  } catch (err) {
+    router.push({ name: 'error' })
+  } finally {
+    setTimeout(() => (submitting.value = false), 300)
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('paste', handlePaste, true)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('paste', handlePaste, true)
+})
 </script>
 
 <template>
