@@ -8,7 +8,7 @@ import Dirham from '@/assets/images/dirham.webp'
 import DirhamAccount from '@/assets/images/dirham-account.webp'
 import GoldCoin from '@/assets/images/gold-coin.webp'
 import SilverCoin from '@/assets/images/silver-coin.webp'
-
+import BlobDecor from '@/assets/images/bloob-decor.webp'
 const route = useRoute()
 
 interface Student {
@@ -16,6 +16,7 @@ interface Student {
   name: string;
   profilePhoto: string;
 }
+// const nfcId = route.params.id
 const nfcId = route.params.id
 
 const student = ref<Student | null>(null)
@@ -39,10 +40,6 @@ onMounted(async () => {
     }
   }
 });
-
-
-
-
 </script>
 
 <template>
@@ -54,16 +51,19 @@ onMounted(async () => {
       <div class="absolute inset-10">
         <img :src="Logo2" alt="logo" />
       </div>
-
       <div v-if="student" class="flex flex-col justify-center items-center relative gap-10 z-10 pt-10">
-        <img :src="student.profilePhoto" alt="student photo" class="w-60 h-60 rounded-full object-cover border-4 border-white shadow-lg" />
-        <div class="z-15 text-center">
-          <h1 class="text-heading font-bold text-white text-shadow-custom font-heading leading-[70%]">{{ student.name }} </h1>
+        <img :src="student.profilePhoto" alt="student photo" class="size-80" />
+        <div class="z-15 text-center -mt-10">
+          <h1 class="text-heading font-bold text-white text-shadow-custom font-heading leading-[70%]">{{ student.name }}
+          </h1>
           <p class="text-white font-heading text-subheading font-bold mb-10">Русский язык (3-6 лет)</p>
           <div class="flex items-center justify-center gap-5">
             <img :src="Dirham" alt="dirham" class="h-15 w-auto" />
             <span class="text-white text-[100px] font-medium">3,240</span>
           </div>
+        </div>
+        <div class="absolute bottom-30 z-10">
+          <img :src="BlobDecor" alt="blob" />
         </div>
       </div>
     </div>
