@@ -9,22 +9,11 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const submitting = ref(false)
 
-function extractTenDigits(text: string): string | null {
-  const m = text.match(/\d{10}/)
-  return m ? m[0] : null
-}
+// Накопление цифр, вводимых считывателем (эмулирует клавиатуру)
+const buffer = ref('')
 
-async function handlePaste(e: ClipboardEvent) {
-  e.preventDefault()
+async function submitUid(uid: string) {
   if (submitting.value) return
-
-  const raw = e.clipboardData?.getData('text') ?? ''
-  const uid = extractTenDigits(raw)
-  if (!uid) {
-    console.warn('[paste] нет 10 подряд цифр в буфере:', JSON.stringify(raw))
-    return
-  }
-
   submitting.value = true
   try {
     const res = await fetch('https://kiosk.bezalelab.com/api/v1/attendance/scan', {
@@ -46,12 +35,24 @@ async function handlePaste(e: ClipboardEvent) {
   }
 }
 
+function handleKeydown(e: KeyboardEvent) {
+  if (/^\d$/.test(e.key)) {
+    if (submitting.value) return
+    buffer.value += e.key
+    if (buffer.value.length === 10) {
+      const uid = buffer.value
+      buffer.value = ''
+      submitUid(uid)
+    }
+  }
+}
+
 onMounted(() => {
-  window.addEventListener('paste', handlePaste, true)
+  window.addEventListener('keydown', handleKeydown, true)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('paste', handlePaste, true)
+  window.removeEventListener('keydown', handleKeydown, true)
 })
 </script>
 
