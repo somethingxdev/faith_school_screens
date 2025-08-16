@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useFetch } from '@vueuse/core'
 import HelloVideo from '@/assets/videos/tiger_waving_hi.mp4'
 import BezalelLogo from '@/assets/images/bezazel-logo.svg'
 import FaithSchoolLogo from '@/assets/images/faith_school-logo.svg'
@@ -15,19 +16,13 @@ async function submitUid(uid: string) {
   if (submitting.value) return
   submitting.value = true
   try {
-    const res = await fetch('https://kiosk.bezalelab.com/api/v1/attendance/scan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uid }),
-    })
-    console.log('[submit]', { uid, status: res.status, ok: res.ok })
-    if (res.ok) {
+    const { response } = await useFetch('https://kiosk.bezalelab.com/api/v1/attendance/scan').post({ uid }).json()
+    if (response.value?.ok) {
       router.push({ name: 'profile', params: { id: uid } })
     } else {
       router.push({ name: 'error' })
     }
   } catch (err) {
-    console.error('[submit] error', err)
     router.push({ name: 'error' })
   } finally {
     setTimeout(() => (submitting.value = false), 300)

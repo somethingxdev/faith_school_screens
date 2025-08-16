@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
-import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
+import { useIdle, useFetch } from '@vueuse/core'
 import BodyBg from '@/assets/images/background.avif'
 import Successful from '@/assets/images/successful.webp'
 import Logo2 from '@/assets/images/logo-light.webp'
@@ -10,51 +11,68 @@ import GoldCoin from '@/assets/images/gold-coin.webp'
 import SilverCoin from '@/assets/images/silver-coin.webp'
 import BlobDecor from '@/assets/images/bloob-decor.webp'
 const route = useRoute()
+const router = useRouter()
 
 interface Student {
   id: number;
   name: string;
   profilePhoto: string;
 }
-// const nfcId = route.params.id
+
+interface ScanResponse {
+  success: boolean
+  student: Student
+}
+
 const nfcId = route.params.id
 
 const student = ref<Student | null>(null)
 
+const { data, error, execute } = useFetch<ScanResponse>('https://kiosk.bezalelab.com/api/v1/attendance/scan', { immediate: false })
+  .post({ uid: String(nfcId ?? '') })
+  .json()
+
 onMounted(async () => {
-  if (nfcId) {
-    try {
-      const response = await fetch('https://kiosk.bezalelab.com/api/v1/attendance/scan', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ uid: nfcId })
-      });
-      const data = await response.json();
-      if (data.success) {
-        student.value = data.student;
-      }
-    } catch (error) {
-      console.error('Error fetching student data:', error);
+  if (!nfcId) return
+  try {
+    await execute()
+    if (data.value?.success) {
+      student.value = data.value.student
+    } else if (error.value) {
+      console.error('useFetch error:', error.value)
     }
+  } catch (e) {
+    console.error('Error fetching student data:', e)
   }
 });
+
+
+const { idle, reset } = useIdle(60 * 1000)
+watch(idle, (idleValue) => {
+  if (idleValue) {
+    router.push({ name: 'home' })
+    reset()
+  }
+})
 </script>
 
 <template>
   <div class="container mx-auto max-w-[1080px] bg-cover flex flex-col gap-20 pb-20"
     :style="{ backgroundImage: `url(${BodyBg})` }">
 
-    <div class="relative h-260">
+    <div class="relative h-240">
       <img :src="Successful" class="absolute inset-0 size-full" alt="welcome" />
       <div class="absolute inset-10">
         <img :src="Logo2" alt="logo" />
       </div>
+      <RouterLink to="/" class="absolute right-10 top-10 bg-white px-6 py-3 uppercase rounded-lg drop-shadow z-50">
+        Выйти
+      </RouterLink>
+
       <div v-if="student" class="flex flex-col justify-center items-center relative gap-10 z-10 pt-10">
         <img :src="student.profilePhoto" alt="student photo" class="size-80" />
         <div class="z-15 text-center -mt-10">
-          <h1 class="text-heading font-bold text-white text-shadow-custom font-heading leading-[70%]">{{ student.name }}
+          <h1 class="text-[120px] font-bold text-white text-shadow-custom font-heading leading-none">{{ student.name }}
           </h1>
           <p class="text-white font-heading text-subheading font-bold mb-10">Русский язык (3-6 лет)</p>
           <div class="flex items-center justify-center gap-5">

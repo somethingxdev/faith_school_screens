@@ -3,32 +3,26 @@ import ErrorVideo from "@/assets/videos/tiger_can't_find_card_3.mp4"
 import BezalelLogo from '@/assets/images/bezazel-logo.svg'
 import FaithSchoolLogo from '@/assets/images/faith_school-logo.svg'
 import BodyBg from '@/assets/images/background.avif'
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useFetch, useIdle } from '@vueuse/core'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const submitting = ref(false)
 
-// Накопление цифр, вводимых считывателем (эмулирует клавиатуру)
 const buffer = ref('')
 
 async function submitUid(uid: string) {
   if (submitting.value) return
   submitting.value = true
   try {
-    const res = await fetch('https://kiosk.bezalelab.com/api/v1/attendance/scan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ uid }),
-    })
-    console.log('[submit]', { uid, status: res.status, ok: res.ok })
-    if (res.ok) {
+    const { response } = await useFetch('https://kiosk.bezalelab.com/api/v1/attendance/scan').post({ uid }).json()
+    if (response.value?.ok) {
       router.push({ name: 'profile', params: { id: uid } })
     } else {
       router.push({ name: 'error' })
     }
   } catch (err) {
-    console.error('[submit] error', err)
     router.push({ name: 'error' })
   } finally {
     setTimeout(() => (submitting.value = false), 300)
@@ -54,10 +48,19 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown, true)
 })
+
+const { idle, reset } = useIdle(60 * 1000)
+watch(idle, (idleValue) => {
+  if (idleValue) {
+    router.push({ name: 'home' })
+    reset()
+  }
+})
 </script>
 
 <template>
-  <div class="container mx-auto max-w-[1080px] h-[1920px] bg-cover flex flex-col gap-22.5 pb-10" :style="{ backgroundImage: `url(${BodyBg})` }">
+  <div class="container mx-auto max-w-[1080px] h-[1920px] bg-cover flex flex-col gap-22.5 pb-10"
+    :style="{ backgroundImage: `url(${BodyBg})` }">
     <div class="relative">
       <div class="h-220 overflow-hidden video">
         <video class="h-full object-cover object-center" :src="ErrorVideo" autoplay loop muted></video>
