@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from 'vue-router'
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { useIdle, useFetch } from '@vueuse/core'
 import BodyBg from '@/assets/images/background.avif'
 import Successful from '@/assets/images/successful.webp'
@@ -19,29 +19,34 @@ interface Student {
   profilePhoto: string;
 }
 
-interface ScanResponse {
-  success: boolean
-  student: Student
+interface ApiScanResponse {
+  success: boolean;
+  student: Student;
+  scannedAt: string;
+  points: number;
+  message: string;
+  token: string;
 }
+
 
 const nfcId = route.params.id
 
-const student = ref<Student | null>(null)
+const scan = ref<ApiScanResponse | null>(null)
 const buffer = ref('')
 
 async function submitUid(uid: string) {
   try {
-    const { data, response } = await useFetch<ScanResponse>('https://kiosk.bezalelab.com/api/v1/attendance/scan')
+    const { data, response } = await useFetch('https://kiosk.bezalelab.com/api/v1/attendance/scan')
       .post({ uid })
-      .json()
+      .json<ApiScanResponse>()
     if (response.value?.ok && data.value?.success) {
-      student.value = data.value.student
+      scan.value = data.value
     } else {
-      student.value = null
+      scan.value = null
     }
   } catch (e) {
     console.error('Error fetching student data:', e)
-    student.value = null
+    scan.value = null
   }
 }
 
@@ -72,6 +77,8 @@ watch(idle, (idleValue) => {
     reset()
   }
 })
+
+const formattedPoints = computed(() => scan.value ? scan.value.points.toLocaleString('ru-RU') : '0')
 </script>
 
 <template>
@@ -87,15 +94,15 @@ watch(idle, (idleValue) => {
         Выйти
       </RouterLink>
 
-      <div v-if="student" class="flex flex-col justify-center items-center relative gap-10 z-10 pt-10">
-        <img :src="student.profilePhoto" alt="student photo" class="size-80" />
+      <div v-if="scan" class="flex flex-col justify-center items-center relative gap-10 z-10 pt-10">
+        <img :src="scan.student.profilePhoto" alt="student photo" class="size-80" />
         <div class="z-15 text-center -mt-10">
-          <h1 class="text-[120px] font-bold text-white text-shadow-custom font-heading leading-none">{{ student.name }}
+          <h1 class="text-[120px] font-bold text-white text-shadow-custom font-heading leading-none">{{ scan.student.name }}
           </h1>
-          <p class="text-white font-heading text-subheading font-bold mb-10">Русский язык (3-6 лет)</p>
+          <p class="text-white font-heading text-subheading font-bold mb-10">{{ scan.message }}</p>
           <div class="flex items-center justify-center gap-5">
             <img :src="Dirham" alt="dirham" class="h-15 w-auto" />
-            <span class="text-white text-[100px] font-medium">3,240</span>
+            <span class="text-white text-[100px] font-medium">{{ formattedPoints }}</span>
           </div>
         </div>
         <div class="absolute bottom-30 z-10">
