@@ -126,7 +126,7 @@ const dirhamTreeSrc = computed(() => {
       </div>
     </div>
 
-    <div v-if="scan" class="flex justify-center items-center gap-10">
+    <div v-if="scan" class="flex justify-center items-end gap-10">
       <div class="w-[300px]">
         <img :src="dirhamTreeSrc" alt="dirham-account" />
       </div>
