@@ -45,6 +45,7 @@ async function submitUid(uid: string) {
     const { data, response } = await useFetch('https://kiosk.bezalelab.com/api/v1/attendance/scan').post({ uid }).json<ApiScanResponse>()
     if (response.value?.ok && data.value?.success) {
       scan.value = data.value
+      console.log(scan.value)
     } else {
       scan.value = null
     }
@@ -82,10 +83,10 @@ watch(idle, (idleValue) => {
   }
 })
 
-const formattedPoints = computed(() => (scan.value ? scan.value.points.toLocaleString('ru-RU') : '0'))
+const formattedPoints = computed(() => (250).toLocaleString('ru-RU'))
 
 const dirhamTreeSrc = computed(() => {
-  const points = 250;
+  const points = 250
   const ranges: { min: number; max: number; src: string }[] = [
     { min: 0, max: 50, src: Tree_0x50 },
     { min: 51, max: 750, src: Tree_51x750 },
