@@ -85,7 +85,7 @@ watch(idle, (idleValue) => {
 const formattedPoints = computed(() => (scan.value ? scan.value.points.toLocaleString('ru-RU') : '0'))
 
 const dirhamTreeSrc = computed(() => {
-  const points = scan.value?.points ?? 0
+  const points = 250;
   const ranges: { min: number; max: number; src: string }[] = [
     { min: 0, max: 50, src: Tree_0x50 },
     { min: 51, max: 750, src: Tree_51x750 },
