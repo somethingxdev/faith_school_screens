@@ -83,7 +83,7 @@ watch(idle, (idleValue) => {
   }
 })
 
-const formattedPoints = computed(() => (250).toLocaleString('ru-RU'))
+const formattedPoints = computed(() => (500).toLocaleString('ru-RU'))
 
 const dirhamTreeSrc = computed(() => {
   const points = 250
