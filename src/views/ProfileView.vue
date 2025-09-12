@@ -17,8 +17,6 @@ import Tree_2251x3000 from '@/assets/images/dirham-tree/2251x3000.avif'
 import Tree_3001x3750 from '@/assets/images/dirham-tree/3001x3750.avif'
 import Tree_3751x5000 from '@/assets/images/dirham-tree/3751x5000.avif'
 import Tree_5001x6000plus from '@/assets/images/dirham-tree/5001x6000+.avif'
-const route = useRoute()
-const router = useRouter()
 
 interface Student {
   id: number
@@ -35,6 +33,11 @@ interface ApiScanResponse {
   token: string
 }
 
+const route = useRoute()
+const router = useRouter()
+
+const POINTS = 755
+
 const nfcId = route.params.id
 
 const scan = ref<ApiScanResponse | null>(null)
@@ -42,12 +45,12 @@ const buffer = ref('')
 
 async function submitUid(uid: string) {
   try {
-    const { data, response } = await useFetch('https://kiosk.bezalelab.com/api/v1/attendance/scan').post({ uid }).json<ApiScanResponse>()
-    if (response.value?.ok && data.value?.success) {
-      scan.value = data.value
-      console.log(scan.value)
-    } else {
+    const { data: response, error } = await useFetch('https://kiosk.bezalelab.com/api/v1/attendance/scan').post({ uid }).json<ApiScanResponse>()
+    if (error.value) {
+      console.error('Error fetching student data:', error.value)
       scan.value = null
+    } else {
+      scan.value = response.value
     }
   } catch (e) {
     console.error('Error fetching student data:', e)
@@ -83,10 +86,7 @@ watch(idle, (idleValue) => {
   }
 })
 
-const formattedPoints = computed(() => (755).toLocaleString('ru-RU'))
-
 const dirhamTreeSrc = computed(() => {
-  const points = 250
   const ranges: { min: number; max: number; src: string }[] = [
     { min: 0, max: 50, src: Tree_0x50 },
     { min: 51, max: 750, src: Tree_51x750 },
@@ -97,7 +97,7 @@ const dirhamTreeSrc = computed(() => {
     { min: 3751, max: 5000, src: Tree_3751x5000 },
     { min: 5001, max: Number.POSITIVE_INFINITY, src: Tree_5001x6000plus },
   ]
-  const match = ranges.find((r) => points >= r.min && points <= r.max)
+  const match = ranges.find((r) => POINTS >= r.min && POINTS <= r.max)
   return match?.src
 })
 </script>
@@ -118,7 +118,7 @@ const dirhamTreeSrc = computed(() => {
           <p class="text-white font-heading text-subheading font-bold mb-10">{{ scan.message }}</p>
           <div class="flex items-center justify-center gap-5">
             <img :src="Dirham" alt="dirham" class="h-15 w-auto" />
-            <span class="text-white text-[100px] font-medium">{{ formattedPoints }}</span>
+            <span class="text-white text-[100px] font-medium">{{ POINTS }}</span>
           </div>
         </div>
         <div class="absolute bottom-30 z-10">
