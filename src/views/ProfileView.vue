@@ -36,7 +36,7 @@ interface ApiScanResponse {
 const route = useRoute()
 const router = useRouter()
 
-const POINTS = 755
+const POINTS = 1004
 
 const nfcId = route.params.id
 
